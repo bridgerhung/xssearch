@@ -131,7 +131,7 @@ onMounted(async () => {
         <div v-if="canShowGoogleLogin" class="google-login-container">
             <googleLogin ref="googleLoginRef" />
             
-            <!-- 測試帳號登入按鈕 -->
+            <!-- 測試帳號登入按鈕 
             <div class="test-login-section">
                 <div class="divider">或</div>
                 <button @click="handleTestLogin" class="test-login-btn" :disabled="isTestLoginLoading">
@@ -139,7 +139,7 @@ onMounted(async () => {
                     <span v-else>⚙️ 登入中...</span>
                 </button>
                 <p v-if="isTestLoginLoading" class="loading-text">登入中，請稍待</p>
-            </div>
+            </div> -->
         </div>
         
         <!-- 未完成驗證的提示 -->

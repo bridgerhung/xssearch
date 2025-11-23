@@ -3,7 +3,7 @@ import { useInputStore } from '../stores/useInputStore';
 
 // 創建 axios 實例
 const apiClient = axios.create({
-  baseURL: 'https://api-xssearch.brid.pw',
+  baseURL: 'https://api.brid.pw',
   timeout: 90000, // 90 秒超時 (RAG 推薦需要更長時間)
 });
 
