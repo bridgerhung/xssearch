@@ -57,7 +57,7 @@ onMounted(async ()=>{
         
         // 渲染 Turnstile 小工具
         turnstileWidgetId.value = await renderTurnstile(
-            'turnstile-widget-recommend',
+            'turnstile-widget',
             (token) => {
                 canSubmit.value = true;
                 // console.log('✅ Turnstile 驗證成功');
