@@ -8,6 +8,7 @@ import apiClient from '../utils/axios';
 import { useAnimations } from '../composables/useAnimations';
 import { useTurnstile } from '../composables/useTurnstile';
 import { useInputStore } from '../stores/useInputStore';
+import { sanitizeInput, validateInputLength } from '../utils/xssFilter';
 
 const inputStore = useInputStore();
 
@@ -34,6 +35,8 @@ const safeShowWarning = (title, text) => {
 
 onMounted(async ()=>{
     searchBoxAnimation('.searchBar')
+
+
     
     // 使用新的 token 檢查機制
     if (!inputStore.token || !inputStore.checkTokenValidity()) {
@@ -71,10 +74,22 @@ onMounted(async ()=>{
 })
 
 async function handleSearch(){
-    if(searchQuery.value.trim() === '') {
-        await safeShowWarning('請輸入商品型號或關鍵字，例如：iphone 17', '搜尋欄位不能為空！');
+    // 清理和驗證輸入
+    const cleanedInput = sanitizeInput(searchQuery.value);
+    
+    if(cleanedInput.trim() === '') {
+        await safeShowWarning('請輸入商品型號或關鍵字，例如：Samsung Galaxy A56 5G', '搜尋欄位不能為空！');
         return;
     }
+    
+    // 驗證輸入長度
+    if (!validateInputLength(cleanedInput, 20, 25)) {
+        await safeShowWarning('輸入內容過長', '請限制在英文20字元或中文25字元以內');
+        return;
+    }
+    
+    // 更新輸入框值為清理後的內容
+    searchQuery.value = cleanedInput;
     
     if (!canSubmit.value) {
         await safeShowWarning('請先完成安全驗證', '需要通過 Turnstile 驗證才能搜尋');
@@ -90,9 +105,9 @@ async function handleSearch(){
         
         updateLoading(15);
         
-        // 準備請求資料
+        // 準備請求資料（使用清理後的輸入）
         const requestData = {
-            "keyword": searchQuery.value,
+            "keyword": cleanedInput,
             "turnstile_token": turnstileToken
         };
         
@@ -181,7 +196,7 @@ async function handleSearch(){
         踩雷從此是別人的夜</p>
         <form @submit.prevent="handleSearch">
             <div class="searchBar">
-                <input v-model="searchQuery" type="text" placeholder="請輸入商品型號或關鍵字，例如：iphone 17" class="searchInput">
+                <input v-model="searchQuery" type="text" placeholder="請輸入商品型號或關鍵字，例如：Samsung Galaxy A56 5G" class="searchInput">
                 <button type="submit" :disabled="!canSubmit" :class="{ disabled: !canSubmit }">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </button>

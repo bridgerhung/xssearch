@@ -8,6 +8,7 @@ import { useAnimations } from '../composables/useAnimations';
 import { useRecommendStore } from '../stores/useRecommendStore';
 import { useInputStore } from '../stores/useInputStore';
 import { useTurnstile } from '../composables/useTurnstile';
+import { sanitizeInput, validateInputLength } from '../utils/xssFilter';
 const recommendStore = useRecommendStore();
 const inputStore = useInputStore();
 const searchQuery = ref('');
@@ -70,10 +71,22 @@ onMounted(async ()=>{
 
 
 async function handleSearch(){
-    if(searchQuery.value.trim()===''){
+    // 清理和驗證輸入
+    const cleanedInput = sanitizeInput(searchQuery.value);
+    
+    if(cleanedInput.trim()===''){
         await safeShowWarning('請輸入商品需求', '');
         return;
     }
+    
+    // 驗證輸入長度
+    if (!validateInputLength(cleanedInput, 20, 25)) {
+        await safeShowWarning('輸入內容過長', '請限制在英文20字元或中文25字元以內');
+        return;
+    }
+    
+    // 更新輸入框值為清理後的內容
+    searchQuery.value = cleanedInput;
     
     if (!canSubmit.value) {
         await safeShowWarning('請先完成安全驗證', '需要通過 Turnstile 驗證才能搜尋');
@@ -103,9 +116,9 @@ async function handleSearch(){
         updateLoading(10);
         startSimulatedProgress();
         
-        // 準備請求資料
+        // 準備請求資料（使用清理後的輸入）
         const requestData = {
-            "query": searchQuery.value,
+            "query": cleanedInput,
             "turnstile_token": turnstileToken
         };
         
